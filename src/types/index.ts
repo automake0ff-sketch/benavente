@@ -1,20 +1,14 @@
 export type VerificationStatus = 'verified' | 'pending' | 'unavailable';
 
-export interface Allergen {
-  id: string;
-  name: string;
-  icon?: string;
-}
-
 export interface MenuItem {
   id: string;
   name: string;
   description: string;
   category: string;
-  price: number | null; // null if unconfirmed
-  price_display?: string; // e.g. "Consultar precio" if pending
+  price: number | null; // null si no está confirmado
+  price_display?: string; // Ej: "Consultar precio" si es provisional
   image: string;
-  allergens: string[];
+  allergens: string[]; // Sólo los comprobados o vacíos con nota de consulta en sala
   available: boolean;
   featured: boolean;
   verification_status: VerificationStatus;
@@ -30,7 +24,7 @@ export interface GastroSpecialty {
   description: string;
   image: string;
   is_active: boolean;
-  badge?: string; // e.g. "Sugerencia", "Temporada", "Plato estrella"
+  badge?: string;
   updated_at: string;
 }
 
@@ -43,9 +37,9 @@ export interface RestaurantConfig {
   about_text: string;
   address: string;
   address_note: string;
-  phone: string;
+  phone: string; // Vacío si no está confirmado oficialmente
   phone_display: string;
-  whatsapp_number: string;
+  whatsapp_number: string; // Vacío si no está confirmado oficialmente
   whatsapp_display: string;
   instagram_url: string;
   tripadvisor_url: string;
@@ -72,5 +66,5 @@ export interface ReservationSubmission {
   guests: number;
   notes?: string;
   created_at: string;
-  status: 'pending_contact' | 'contacted' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'contacted' | 'accepted' | 'rejected';
 }

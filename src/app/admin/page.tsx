@@ -21,13 +21,20 @@ import {
   RotateCcw,
   ShieldAlert,
   Search,
-  ExternalLink
+  Lock,
+  LogIn,
+  LogOut,
+  Info
 } from 'lucide-react';
 import { benaventeStore } from '@/lib/store';
 import { MenuItem, GastroSpecialty, RestaurantConfig, ReservationSubmission, VerificationStatus } from '@/types';
 import { MENU_CATEGORIES } from '@/data/initialData';
 
 export default function AdminPage() {
+  // Estado de acceso simulado a la demo
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [loginEmail, setLoginEmail] = useState<string>('gerencia@benaventegastrobar.es');
+
   const [activeTab, setActiveTab] = useState<'dashboard' | 'menu' | 'specialties' | 'reservations' | 'config'>('dashboard');
 
   const [config, setConfig] = useState<RestaurantConfig | null>(null);
@@ -52,6 +59,15 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadData();
+
+    // Sincronización si cambian datos en otra ventana
+    const handleSync = () => loadData();
+    window.addEventListener('benavente_store_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('benavente_store_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
   }, []);
 
   const loadData = () => {
@@ -71,7 +87,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!config) return;
     benaventeStore.saveConfig(config);
-    triggerToast('¡Configuración del gastrobar guardada correctamente!');
+    triggerToast('¡Configuración del gastrobar guardada localmente!');
   };
 
   // Acciones de Carta
@@ -86,7 +102,7 @@ export default function AdminPage() {
     benaventeStore.saveMenuItems(updated);
     setEditingItem(null);
     setIsCreatingItem(false);
-    triggerToast('Plato guardado con éxito en la carta.');
+    triggerToast('Plato guardado con éxito. Reflejado en la carta pública.');
   };
 
   const handleDeleteMenuItem = (id: string) => {
@@ -102,12 +118,14 @@ export default function AdminPage() {
     const updated = menuItems.map(m => m.id === id ? { ...m, available: !m.available } : m);
     setMenuItems(updated);
     benaventeStore.saveMenuItems(updated);
+    triggerToast('Visibilidad actualizada.');
   };
 
   const handleToggleFeatured = (id: string) => {
     const updated = menuItems.map(m => m.id === id ? { ...m, featured: !m.featured } : m);
     setMenuItems(updated);
     benaventeStore.saveMenuItems(updated);
+    triggerToast('Estado de plato destacado actualizado.');
   };
 
   // Acciones de Especialidades
@@ -122,7 +140,7 @@ export default function AdminPage() {
     benaventeStore.saveSpecialties(updated);
     setEditingSpecialty(null);
     setIsCreatingSpecialty(false);
-    triggerToast('Novedad gastronómica guardada.');
+    triggerToast('Especialidad guardada con éxito.');
   };
 
   const handleDeleteSpecialty = (id: string) => {
@@ -138,30 +156,102 @@ export default function AdminPage() {
     const updated = specialties.map(s => s.id === id ? { ...s, is_active: !s.is_active } : s);
     setSpecialties(updated);
     benaventeStore.saveSpecialties(updated);
+    triggerToast('Estado de especialidad actualizado.');
   };
 
   // Actualizar estado de reserva
   const handleReservationStatusChange = (id: string, status: ReservationSubmission['status']) => {
     benaventeStore.updateReservationStatus(id, status);
     setReservations(benaventeStore.getReservations());
-    triggerToast('Estado de reserva actualizado.');
+    triggerToast('Estado de solicitud actualizado.');
   };
 
   const handleResetDefaults = () => {
-    if (confirm('¿Restablecer todos los datos del gastrobar a los valores iniciales de demostración? Se borrarán tus cambios locales.')) {
+    if (confirm('¿Restablecer todos los datos del gastrobar a los valores originales de la demo? Se eliminarán los cambios locales guardados en este navegador.')) {
       benaventeStore.resetToDefaults();
       loadData();
-      triggerToast('Datos restablecidos.');
+      triggerToast('Datos de demostración restablecidos.');
     }
   };
 
   if (!config) return null;
 
-  // Métricas para el Dashboard
+  // Pantalla de acceso simulado si se cierra sesión
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#FCFAF5] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white p-8 rounded-2xl border border-[#89957C]/25 shadow-xl space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-12 h-12 bg-[#344536] text-[#FCFAF5] rounded-full flex items-center justify-center mx-auto">
+              <Lock className="w-6 h-6" />
+            </div>
+            <h1 className="font-serif text-2xl font-bold text-[#344536]">
+              Panel de Demostración
+            </h1>
+            <p className="text-xs text-[#252923]/70">
+              Acceso simulado para presentación comercial de Benavente Gastrobar.
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F4F0E7] border border-[#89957C]/20 text-xs text-[#252923]/80 space-y-1">
+            <span className="font-bold text-[#344536] block">Modo de Demostración:</span>
+            <p>No se requiere contraseña real. Pulsa en acceder para explorar las herramientas de gestión.</p>
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setIsAuthenticated(true);
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className="block text-xs font-bold text-[#344536] mb-1 uppercase tracking-wider">
+                Usuario / Correo
+              </label>
+              <input
+                type="email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-[#89957C]/30 text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-[#344536] mb-1 uppercase tracking-wider">
+                Contraseña (Simulada)
+              </label>
+              <input
+                type="password"
+                defaultValue="demo1234"
+                className="w-full p-2.5 rounded-xl border border-[#89957C]/30 text-xs"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#344536] text-white text-xs font-semibold uppercase tracking-wider hover:bg-[#252923] transition-colors"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Entrar al Panel Demo</span>
+            </button>
+          </form>
+
+          <div className="text-center pt-2">
+            <Link href="/" className="text-xs text-[#89957C] hover:text-[#344536] underline">
+              ← Volver a la web pública
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Métricas reales calculadas desde los datos locales
   const totalProducts = menuItems.length;
   const publishedProducts = menuItems.filter(m => m.available).length;
-  const pendingVerificationProducts = menuItems.filter(m => m.verification_status === 'pending').length;
-  const featuredProducts = menuItems.filter(m => m.featured).length;
+  const hiddenProducts = menuItems.filter(m => !m.available).length;
+  const specialtiesCount = specialties.length;
+  const reservationsCount = reservations.length;
 
   return (
     <div className="min-h-screen bg-[#F4F0E7]/50 flex flex-col">
@@ -189,7 +279,7 @@ export default function AdminPage() {
                 {config.name}
               </span>
               <span className="text-[10px] tracking-widest text-[#89957C] uppercase font-semibold">
-                Panel de Gestión & Control Editorial
+                Panel de Demostración Comercial
               </span>
             </div>
           </div>
@@ -201,14 +291,22 @@ export default function AdminPage() {
               className="inline-flex items-center gap-1.5 text-xs text-[#89957C] hover:text-white px-3 py-1.5 rounded-lg border border-white/15 transition-colors"
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>Ver Web Pública</span>
+              <span className="hidden sm:inline">Ver Web Pública</span>
             </Link>
             <button
               onClick={handleResetDefaults}
-              className="inline-flex items-center gap-1 text-[11px] text-[#FCFAF5]/70 hover:text-rose-300 transition-colors p-1"
-              title="Restablecer datos demo"
+              className="inline-flex items-center gap-1 text-[11px] text-[#FCFAF5]/70 hover:text-rose-300 transition-colors px-2 py-1.5 rounded border border-white/10"
+              title="Restablecer datos originales"
             >
               <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Restaurar Demo</span>
+            </button>
+            <button
+              onClick={() => setIsAuthenticated(false)}
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[#FCFAF5] transition-colors"
+              title="Cerrar sesión demo"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -220,12 +318,9 @@ export default function AdminPage() {
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
             <span>
-              <strong>Entorno de Demostración Local:</strong> Los cambios se persisten en el almacenamiento del navegador (LocalStorage). Para producción multiusuario, se conecta con Supabase (Auth + Postgres + RLS).
+              <strong>Simulación Local Activa:</strong> Esta aplicación no cuenta con base de datos externa ni backend. Los cambios se persisten en el navegador mediante <code>localStorage</code> para ilustrar la operativa del producto al cliente.
             </span>
           </div>
-          <span className="hidden sm:inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-white/10 text-[#89957C]">
-            Modo Demo Activo
-          </span>
         </div>
       </div>
 
@@ -257,7 +352,7 @@ export default function AdminPage() {
               <UtensilsCrossed className="w-4 h-4" />
               <span>Gestión de Carta</span>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/10">
               {menuItems.length}
             </span>
           </button>
@@ -272,9 +367,9 @@ export default function AdminPage() {
           >
             <div className="flex items-center gap-3">
               <Sparkles className="w-4 h-4" />
-              <span>Lo que se cuece</span>
+              <span>Especialidades</span>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/10">
               {specialties.length}
             </span>
           </button>
@@ -289,7 +384,7 @@ export default function AdminPage() {
           >
             <div className="flex items-center gap-3">
               <CalendarCheck className="w-4 h-4" />
-              <span>Solicitudes Reserva</span>
+              <span>Reservas Demo</span>
             </div>
             {reservations.length > 0 && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#B96F51] text-white font-bold">
@@ -307,28 +402,28 @@ export default function AdminPage() {
             }`}
           >
             <Settings className="w-4 h-4" />
-            <span>Configuración Local</span>
+            <span>Configuración</span>
           </button>
         </aside>
 
         {/* Área de Contenido Principal */}
         <main className="flex-1 bg-white rounded-2xl border border-[#89957C]/25 shadow-sm p-6 sm:p-8">
           
-          {/* TAB 1: DASHBOARD */}
+          {/* TAB 1: DASHBOARD CON MÉTRICAS LOCALES REALES */}
           {activeTab === 'dashboard' && (
             <div className="space-y-8">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-[#344536]">
-                  Resumen y Estado del Gastrobar
+                  Panel de Control del Establecimiento
                 </h2>
                 <p className="text-xs text-[#252923]/70 mt-1">
-                  Métricas clave del catálogo gastronómico, estado de verificación y solicitudes de clientes.
+                  Estadísticas calculadas en tiempo real a partir del estado de la carta y reservas locales.
                 </p>
               </div>
 
-              {/* Tarjetas de métricas */}
+              {/* Tarjetas de métricas precisas */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 rounded-xl bg-[#FCFAF5] border border-[#89957C]/20 space-y-2">
+                <div className="p-5 rounded-xl bg-[#FCFAF5] border border-[#89957C]/20 space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#89957C]">
                     Total Productos
                   </span>
@@ -336,87 +431,86 @@ export default function AdminPage() {
                     {totalProducts}
                   </p>
                   <p className="text-[11px] text-[#252923]/60">
-                    Platos registrados en el catálogo
+                    Registrados en la carta local
                   </p>
                 </div>
 
-                <div className="p-5 rounded-xl bg-[#FCFAF5] border border-[#89957C]/20 space-y-2">
+                <div className="p-5 rounded-xl bg-[#FCFAF5] border border-[#89957C]/20 space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
-                    Productos Publicados
+                    Productos Visibles
                   </span>
                   <p className="font-serif text-3xl font-bold text-emerald-800">
                     {publishedProducts}
                   </p>
                   <p className="text-[11px] text-[#252923]/60">
-                    Visibles para los clientes en la carta
+                    Mostrados en la carta pública
                   </p>
                 </div>
 
-                <div className="p-5 rounded-xl bg-[#FCFAF5] border border-[#89957C]/20 space-y-2">
+                <div className="p-5 rounded-xl bg-[#FCFAF5] border border-[#89957C]/20 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700">
+                    Productos Ocultos
+                  </span>
+                  <p className="font-serif text-3xl font-bold text-rose-800">
+                    {hiddenProducts}
+                  </p>
+                  <p className="text-[11px] text-[#252923]/60">
+                    Pausados o fuera de temporada
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-xl bg-[#FCFAF5] border border-[#89957C]/20 space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#B96F51]">
-                    Pendientes de Confirmar
+                    Especialidades / Reservas
                   </span>
                   <p className="font-serif text-3xl font-bold text-[#B96F51]">
-                    {pendingVerificationProducts}
+                    {specialtiesCount} / {reservationsCount}
                   </p>
                   <p className="text-[11px] text-[#252923]/60">
-                    Precios o ingredientes no validados
-                  </p>
-                </div>
-
-                <div className="p-5 rounded-xl bg-[#FCFAF5] border border-[#89957C]/20 space-y-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#89957C]">
-                    Platos Protagonistas
-                  </span>
-                  <p className="font-serif text-3xl font-bold text-[#344536]">
-                    {featuredProducts}
-                  </p>
-                  <p className="text-[11px] text-[#252923]/60">
-                    Destacados en la sección de inicio
+                    Novedades y solicitudes registradas
                   </p>
                 </div>
               </div>
 
-              {/* Estado general del contenido */}
+              {/* Estado general del contenido para propuesta comercial */}
               <div className="p-5 rounded-xl bg-[#F4F0E7]/60 border border-[#89957C]/25 space-y-3">
-                <h3 className="font-serif text-lg font-bold text-[#344536]">
-                  Diagnóstico Editorial de Contenidos
-                </h3>
+                <div className="flex items-center gap-2">
+                  <Info className="w-4 h-4 text-[#B96F51]" />
+                  <h3 className="font-serif text-lg font-bold text-[#344536]">
+                    Resumen de la Demostración Comercial
+                  </h3>
+                </div>
                 <div className="space-y-2 text-xs text-[#252923]/80">
-                  <div className="flex items-center justify-between">
-                    <span>• Platos Protagonistas del Gastrobar</span>
-                    <span className="font-semibold text-emerald-700">5 configurados</span>
+                  <div className="flex items-center justify-between py-1 border-b border-gray-200">
+                    <span>• Sincronización en tiempo real</span>
+                    <span className="font-semibold text-emerald-700">Activa (React + LocalStorage)</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span>• Estado de precios verificados en carta oficial</span>
-                    <span className="font-semibold text-amber-700">Pendiente de ratificación con gerencia</span>
+                  <div className="flex items-center justify-between py-1 border-b border-gray-200">
+                    <span>• Catálogo de platos de demostración</span>
+                    <span className="font-semibold text-emerald-700">18 platos catalogados</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span>• Georreferenciación en Sevilla Este</span>
-                    <span className="font-semibold text-emerald-700">Avenida de las Ciencias, 22</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>• Canales directos de conversión móvil</span>
-                    <span className="font-semibold text-emerald-700">WhatsApp + Teléfono + Formulario</span>
+                  <div className="flex items-center justify-between py-1 border-b border-gray-200">
+                    <span>• Verificación de precios y datos de contacto</span>
+                    <span className="font-semibold text-amber-700">Pendiente de ratificar por el propietario</span>
                   </div>
                 </div>
               </div>
 
-              {/* Accesos directos de acción */}
+              {/* Accesos rápidos */}
               <div className="pt-2 flex flex-wrap gap-3">
                 <button
                   onClick={() => { setActiveTab('menu'); setIsCreatingItem(true); }}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#344536] text-[#FCFAF5] hover:bg-[#252923] text-xs font-semibold tracking-wider uppercase transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Añadir Nuevo Plato</span>
+                  <span>Añadir Plato a la Carta</span>
                 </button>
                 <button
-                  onClick={() => { setActiveTab('specialties'); setIsCreatingSpecialty(true); }}
+                  onClick={() => { setActiveTab('reservations'); }}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#89957C]/30 text-[#344536] hover:bg-[#F4F0E7] text-xs font-semibold tracking-wider uppercase transition-colors"
                 >
-                  <Plus className="w-4 h-4 text-[#B96F51]" />
-                  <span>Crear Novedad Gastronómica</span>
+                  <CalendarCheck className="w-4 h-4 text-[#B96F51]" />
+                  <span>Ver Solicitudes de Reserva ({reservations.length})</span>
                 </button>
               </div>
             </div>
@@ -431,7 +525,7 @@ export default function AdminPage() {
                     Catálogo de Carta Digital
                   </h2>
                   <p className="text-xs text-[#252923]/70 mt-1">
-                    Edita precios, categorías, alérgenos, fotos y estados de verificación.
+                    Crea, modifica precios, cambia fotos, categorías, descripciones y oculta platos.
                   </p>
                 </div>
 
@@ -448,7 +542,7 @@ export default function AdminPage() {
                       available: true,
                       featured: false,
                       verification_status: 'pending',
-                      source: 'Administración Benavente',
+                      source: 'Administración Benavente (Demo)',
                       last_verified_at: new Date().toISOString().split('T')[0],
                     });
                     setIsCreatingItem(true);
@@ -460,7 +554,7 @@ export default function AdminPage() {
                 </button>
               </div>
 
-              {/* Formulario Modal / En línea de creación/edición */}
+              {/* Formulario en línea de creación/edición */}
               {(editingItem || isCreatingItem) && (
                 <div className="p-6 rounded-2xl bg-[#FCFAF5] border-2 border-[#89957C]/40 space-y-4 shadow-md">
                   <div className="flex items-center justify-between pb-3 border-b border-[#89957C]/20">
@@ -528,9 +622,9 @@ export default function AdminPage() {
                         onChange={(e) => setEditingItem(prev => prev ? { ...prev, verification_status: e.target.value as VerificationStatus } : null)}
                         className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
                       >
-                        <option value="verified">Verified (Confirmado por el restaurante)</option>
-                        <option value="pending">Pending (Pendiente de confirmación)</option>
-                        <option value="unavailable">Unavailable (No disponible)</option>
+                        <option value="verified">Confirmado por el restaurante</option>
+                        <option value="pending">Pendiente de confirmación (Ref. provisional)</option>
+                        <option value="unavailable">No disponible</option>
                       </select>
                     </div>
 
@@ -545,7 +639,7 @@ export default function AdminPage() {
                       />
                     </div>
 
-                    <div>
+                    <div className="sm:col-span-2">
                       <label className="block font-bold text-[#344536] mb-1">URL Fotografía</label>
                       <input
                         type="text"
@@ -555,31 +649,7 @@ export default function AdminPage() {
                       />
                     </div>
 
-                    <div>
-                      <label className="block font-bold text-[#344536] mb-1">Alérgenos (separados por comas)</label>
-                      <input
-                        type="text"
-                        value={editingItem?.allergens?.join(', ') || ''}
-                        onChange={(e) => {
-                          const arr = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
-                          setEditingItem(prev => prev ? { ...prev, allergens: arr } : null);
-                        }}
-                        placeholder="Gluten, Lácteos, Huevos..."
-                        className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-[#344536] mb-1">Fuente de datos / Origen</label>
-                      <input
-                        type="text"
-                        value={editingItem?.source || ''}
-                        onChange={(e) => setEditingItem(prev => prev ? { ...prev, source: e.target.value } : null)}
-                        className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-6 pt-5">
+                    <div className="sm:col-span-2 flex items-center gap-6 pt-2">
                       <label className="flex items-center gap-2 cursor-pointer font-bold text-[#344536]">
                         <input
                           type="checkbox"
@@ -587,7 +657,7 @@ export default function AdminPage() {
                           onChange={(e) => setEditingItem(prev => prev ? { ...prev, available: e.target.checked } : null)}
                           className="rounded"
                         />
-                        <span>Disponible en Carta</span>
+                        <span>Visible en Carta Pública</span>
                       </label>
 
                       <label className="flex items-center gap-2 cursor-pointer font-bold text-[#344536]">
@@ -657,8 +727,8 @@ export default function AdminPage() {
                       <th className="p-3">Categoría</th>
                       <th className="p-3">Precio</th>
                       <th className="p-3">Verificación</th>
-                      <th className="p-3">Home</th>
-                      <th className="p-3">Disponible</th>
+                      <th className="p-3">Protagonista</th>
+                      <th className="p-3">Visibilidad</th>
                       <th className="p-3 text-right">Acciones</th>
                     </tr>
                   </thead>
@@ -695,8 +765,8 @@ export default function AdminPage() {
                                 <CheckCircle2 className="w-3 h-3" /> Oficial
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
-                                <Clock className="w-3 h-3" /> Pendiente
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#89957C] bg-[#F4F0E7] px-2 py-0.5 rounded">
+                                <Clock className="w-3 h-3" /> Provisional
                               </span>
                             )}
                           </td>
@@ -757,10 +827,10 @@ export default function AdminPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="font-serif text-2xl font-bold text-[#344536]">
-                    Lo que se cuece en Benavente
+                    Gestión de Especialidades
                   </h2>
                   <p className="text-xs text-[#252923]/70 mt-1">
-                    Crea, publica, oculta o edita sugerencias del día, recomendaciones y novedades gastronómicas.
+                    Crea, publica, oculta o edita platos especiales y recomendaciones del gastrobar.
                   </p>
                 </div>
 
@@ -773,7 +843,7 @@ export default function AdminPage() {
                       description: '',
                       image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop',
                       is_active: true,
-                      badge: 'Sugerencia',
+                      badge: 'Especialidad',
                       updated_at: new Date().toISOString().split('T')[0],
                     });
                     setIsCreatingSpecialty(true);
@@ -781,7 +851,7 @@ export default function AdminPage() {
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#344536] text-[#FCFAF5] hover:bg-[#252923] text-xs font-semibold tracking-wider uppercase transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Nueva Publicación</span>
+                  <span>Nueva Especialidad</span>
                 </button>
               </div>
 
@@ -790,7 +860,7 @@ export default function AdminPage() {
                 <div className="p-6 rounded-2xl bg-[#FCFAF5] border-2 border-[#89957C]/40 space-y-4 shadow-md text-xs">
                   <div className="flex items-center justify-between pb-3 border-b border-[#89957C]/20">
                     <h3 className="font-serif text-lg font-bold text-[#344536]">
-                      {isCreatingSpecialty ? 'Crear Publicación Especial' : `Editar: ${editingSpecialty?.title}`}
+                      {isCreatingSpecialty ? 'Crear Especialidad' : `Editar: ${editingSpecialty?.title}`}
                     </h3>
                     <button
                       onClick={() => { setEditingSpecialty(null); setIsCreatingSpecialty(false); }}
@@ -807,7 +877,7 @@ export default function AdminPage() {
                         type="text"
                         value={editingSpecialty?.title || ''}
                         onChange={(e) => setEditingSpecialty(prev => prev ? { ...prev, title: e.target.value } : null)}
-                        placeholder="Ej. Arroz meloso de marisco de lonja"
+                        placeholder="Ej. Arroz meloso de marisco"
                         className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
                       />
                     </div>
@@ -818,7 +888,7 @@ export default function AdminPage() {
                         type="text"
                         value={editingSpecialty?.tagline || ''}
                         onChange={(e) => setEditingSpecialty(prev => prev ? { ...prev, tagline: e.target.value } : null)}
-                        placeholder="Ej. Fuera de carta del fin de semana"
+                        placeholder="Ej. Propuesta del fin de semana"
                         className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
                       />
                     </div>
@@ -829,13 +899,13 @@ export default function AdminPage() {
                         type="text"
                         value={editingSpecialty?.badge || ''}
                         onChange={(e) => setEditingSpecialty(prev => prev ? { ...prev, badge: e.target.value } : null)}
-                        placeholder="Plato Estrella, Temporada, Sugerencia..."
+                        placeholder="Plato de Demostración, Especialidad..."
                         className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-bold text-[#344536] mb-1">URL Imagen</label>
+                      <label className="block font-bold text-[#344536] mb-1">URL Fotografía</label>
                       <input
                         type="text"
                         value={editingSpecialty?.image || ''}
@@ -850,7 +920,7 @@ export default function AdminPage() {
                         rows={3}
                         value={editingSpecialty?.description || ''}
                         onChange={(e) => setEditingSpecialty(prev => prev ? { ...prev, description: e.target.value } : null)}
-                        placeholder="Explica qué hace especial a este plato o novedad..."
+                        placeholder="Detalle de la elaboración..."
                         className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
                       />
                     </div>
@@ -880,7 +950,7 @@ export default function AdminPage() {
                         onClick={() => editingSpecialty && handleSaveSpecialty(editingSpecialty)}
                         className="px-5 py-2 rounded-lg text-xs font-semibold bg-[#344536] text-white hover:bg-[#252923]"
                       >
-                        Guardar Novedad
+                        Guardar
                       </button>
                     </div>
                   </div>
@@ -945,15 +1015,15 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* TAB 4: SOLICITUDES DE RESERVA */}
+          {/* TAB 4: SOLICITUDES DE RESERVA (DEMO) */}
           {activeTab === 'reservations' && (
             <div className="space-y-6">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-[#344536]">
-                  Solicitudes de Reserva Recibidas
+                  Solicitudes de Reserva de Demostración
                 </h2>
                 <p className="text-xs text-[#252923]/70 mt-1">
-                  Gestiona el contacto y la confirmación de mesas solicitadas a través de la web.
+                  Peticiones generadas desde el formulario público de la web. Puedes cambiar el estado de cada solicitud.
                 </p>
               </div>
 
@@ -964,10 +1034,9 @@ export default function AdminPage() {
                       <tr>
                         <th className="p-3">Cliente</th>
                         <th className="p-3">Fecha y Hora</th>
-                        <th className="p-3">Personas</th>
+                        <th className="p-3">Comensales</th>
                         <th className="p-3">Observaciones</th>
                         <th className="p-3">Estado</th>
-                        <th className="p-3 text-right">Contactar</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -982,33 +1051,22 @@ export default function AdminPage() {
                             <span className="text-[10px] text-[#89957C]">{r.time} h</span>
                           </td>
                           <td className="p-3 font-bold text-[#344536]">
-                            {r.guests} comensales
+                            {r.guests} personas
                           </td>
                           <td className="p-3 text-[11px] text-[#252923]/70 max-w-xs">
-                            {r.notes || '—'}
+                            {r.notes || 'Sin observaciones'}
                           </td>
                           <td className="p-3">
                             <select
                               value={r.status}
                               onChange={(e) => handleReservationStatusChange(r.id, e.target.value as ReservationSubmission['status'])}
-                              className="text-[10px] font-bold p-1 rounded border border-gray-200 bg-white"
+                              className="text-xs font-semibold p-1.5 rounded-lg border border-[#89957C]/30 bg-white"
                             >
-                              <option value="pending_contact">Pendiente de contacto</option>
+                              <option value="pending">Pendiente</option>
                               <option value="contacted">Contactado</option>
-                              <option value="confirmed">Confirmada</option>
-                              <option value="cancelled">Cancelada</option>
+                              <option value="accepted">Aceptada</option>
+                              <option value="rejected">Rechazada</option>
                             </select>
-                          </td>
-                          <td className="p-3 text-right">
-                            <a
-                              href={`https://wa.me/${r.phone.replace(/\D/g, '')}?text=Hola%20${encodeURIComponent(r.name)},%20nos%20ponemos%20en%20contacto%20desde%20Benavente%20Gastrobar%20respecto%20a%20tu%20solicitud%20de%20mesa`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded hover:bg-emerald-100"
-                            >
-                              <span>WhatsApp</span>
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
                           </td>
                         </tr>
                       ))}
@@ -1019,10 +1077,10 @@ export default function AdminPage() {
                 <div className="text-center py-12 border-2 border-dashed border-[#89957C]/30 rounded-xl p-6">
                   <CalendarCheck className="w-8 h-8 text-[#89957C] mx-auto mb-2" />
                   <p className="font-serif text-base font-bold text-[#344536]">
-                    No hay solicitudes pendientes
+                    No hay solicitudes de demostración aún
                   </p>
                   <p className="text-xs text-[#252923]/60 mt-1">
-                    Cuando un usuario envíe el formulario de reserva en la página de inicio, aparecerá aquí.
+                    Ve a la web pública, rellena el formulario de reserva y verás cómo aparece aquí de inmediato.
                   </p>
                 </div>
               )}
@@ -1037,7 +1095,7 @@ export default function AdminPage() {
                   Configuración del Establecimiento
                 </h2>
                 <p className="text-xs text-[#252923]/70 mt-1">
-                  Actualiza datos de contacto, enlaces oficiales, textos de marca y fotos de portada.
+                  Personaliza los datos visibles del gastrobar. Los cambios se guardan localmente para la demostración.
                 </p>
               </div>
 
@@ -1063,7 +1121,7 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#344536] mb-1">Frase de Marca (Titular Home)</label>
+                  <label className="block font-bold text-[#344536] mb-1">Titular Portada (Tagline)</label>
                   <input
                     type="text"
                     value={config.tagline}
@@ -1073,7 +1131,7 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#344536] mb-1">Subtítulo de Marca (Home)</label>
+                  <label className="block font-bold text-[#344536] mb-1">Subtítulo Portada</label>
                   <input
                     type="text"
                     value={config.subtagline}
@@ -1093,33 +1151,12 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#344536] mb-1">Dirección Física</label>
+                  <label className="block font-bold text-[#344536] mb-1">Dirección</label>
                   <input
                     type="text"
                     value={config.address}
                     onChange={(e) => setConfig({ ...config, address: e.target.value })}
                     className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#344536] mb-1">Teléfono Oficial</label>
-                  <input
-                    type="text"
-                    value={config.phone_display}
-                    onChange={(e) => setConfig({ ...config, phone_display: e.target.value })}
-                    className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#344536] mb-1">Número de WhatsApp (con prefijo sin +)</label>
-                  <input
-                    type="text"
-                    value={config.whatsapp_number}
-                    onChange={(e) => setConfig({ ...config, whatsapp_number: e.target.value })}
-                    className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
-                    placeholder="34600000000"
                   />
                 </div>
 
@@ -1134,21 +1171,23 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#344536] mb-1">Foto Hero Principal (URL)</label>
+                  <label className="block font-bold text-[#344536] mb-1">Teléfono Oficial (dejar vacío si no confirmado)</label>
                   <input
                     type="text"
-                    value={config.hero_image}
-                    onChange={(e) => setConfig({ ...config, hero_image: e.target.value })}
+                    value={config.phone}
+                    onChange={(e) => setConfig({ ...config, phone: e.target.value, phone_display: e.target.value || "Teléfono pendiente de confirmación" })}
+                    placeholder="Ej. +34 954 00 00 00"
                     className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#344536] mb-1">Foto Filosofía 1 (URL)</label>
+                  <label className="block font-bold text-[#344536] mb-1">WhatsApp Oficial (dígitos sin +)</label>
                   <input
                     type="text"
-                    value={config.about_image_1}
-                    onChange={(e) => setConfig({ ...config, about_image_1: e.target.value })}
+                    value={config.whatsapp_number}
+                    onChange={(e) => setConfig({ ...config, whatsapp_number: e.target.value, whatsapp_display: e.target.value ? `WhatsApp (${e.target.value})` : "WhatsApp en fase de configuración" })}
+                    placeholder="Ej. 34612345678"
                     className="w-full p-2.5 rounded-lg border border-[#89957C]/30 bg-white"
                   />
                 </div>
@@ -1161,7 +1200,7 @@ export default function AdminPage() {
                       onChange={(e) => setConfig({ ...config, is_phone_verified: e.target.checked })}
                       className="rounded"
                     />
-                    <span>Teléfono y WhatsApp oficiales verificados (Activa botón flotante WhatsApp)</span>
+                    <span>Activar teléfono y WhatsApp en la web pública (sólo si han sido validados con el propietario)</span>
                   </label>
                 </div>
               </div>
@@ -1172,7 +1211,7 @@ export default function AdminPage() {
                   className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#344536] text-[#FCFAF5] hover:bg-[#252923] text-xs font-semibold tracking-wider uppercase transition-colors shadow"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Guardar Toda la Configuración</span>
+                  <span>Guardar Configuración Demo</span>
                 </button>
               </div>
             </form>

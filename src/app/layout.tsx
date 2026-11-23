@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Benavente Gastrobar | La tradición tiene otro sabor (Sevilla)",
-  description: "Cocina con personalidad, platos para compartir y ese punto canalla que hace volver. Gastrobar en Sevilla con propuesta gastronómica cuidada y contemporánea.",
-  keywords: ["Benavente Gastrobar", "Gastrobar Sevilla", "Tapas Sevilla", "Cocina andaluza moderna", "Restaurante Sevilla"],
+  title: "Benavente Gastrobar | Demo Comercial de Experiencia Digital",
+  description: "Propuesta de microapp y carta digital interactiva para Benavente Gastrobar (Sevilla). Demostración comercial y prototipo funcional.",
+  keywords: ["Benavente Gastrobar", "Gastrobar Sevilla", "Tapas Sevilla", "Carta Digital", "Demo Comercial"],
+  metadataBase: new URL("https://benavente2.vercel.app"),
   openGraph: {
-    title: "Benavente Gastrobar — Cocina con personalidad en Sevilla",
-    description: "La tradición tiene otro sabor. Descubre nuestra carta de tapas de autor, especialidades y reserva tu mesa.",
-    url: "https://benaventegastrobar.es",
-    siteName: "Benavente Gastrobar",
+    title: "Benavente Gastrobar — Demo Comercial de Carta y Experiencia Digital",
+    description: "La tradición tiene otro sabor. Prototipo funcional de carta interactiva, reservas y panel de control.",
+    url: "https://benavente2.vercel.app/",
+    siteName: "Benavente Gastrobar (Demo)",
     locale: "es_ES",
     type: "website",
   },

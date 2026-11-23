@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { MenuItem } from '@/types';
 import { MENU_CATEGORIES } from '@/data/initialData';
-import { Search, Sparkles, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { Search, Sparkles, AlertCircle, CheckCircle2, Clock, Info } from 'lucide-react';
 
 interface MenuSectionProps {
   items: MenuItem[];
@@ -12,12 +12,11 @@ interface MenuSectionProps {
 export const MenuSection: React.FC<MenuSectionProps> = ({ items }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [onlyVerified, setOnlyVerified] = useState<boolean>(false);
 
-  // Filtrado reactivo de platos
+  // Filtrado reactivo de platos en cliente
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      // Si el plato está marcado como no disponible en backend/local, no mostrar en vista pública
+      // Si el plato está marcado como no disponible/oculto, no mostrarlo en la carta pública
       if (!item.available) return false;
 
       // Filtro de categoría
@@ -25,24 +24,18 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ items }) => {
         return false;
       }
 
-      // Filtro de verificación si se activa
-      if (onlyVerified && item.verification_status !== 'verified') {
-        return false;
-      }
-
-      // Búsqueda por texto (nombre, ingredientes o alérgenos)
+      // Búsqueda por texto (nombre, ingredientes o categoría)
       if (searchQuery.trim() !== '') {
         const query = searchQuery.toLowerCase();
         const matchesName = item.name.toLowerCase().includes(query);
         const matchesDesc = item.description.toLowerCase().includes(query);
         const matchesCat = item.category.toLowerCase().includes(query);
-        const matchesAllergens = item.allergens?.some(a => a.toLowerCase().includes(query));
-        return matchesName || matchesDesc || matchesCat || matchesAllergens;
+        return matchesName || matchesDesc || matchesCat;
       }
 
       return true;
     });
-  }, [items, selectedCategory, searchQuery, onlyVerified]);
+  }, [items, selectedCategory, searchQuery]);
 
   return (
     <section id="carta" className="py-20 sm:py-28 bg-[#F4F0E7]/40 relative">
@@ -57,7 +50,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ items }) => {
             Nuestra Carta Digital
           </h2>
           <p className="text-sm sm:text-base text-[#252923]/75">
-            Explora nuestras propuestas de cocina andaluza contemporánea. Consulta precios, información de alérgenos y sugerencias de la casa.
+            Explora nuestras propuestas de cocina andaluza contemporánea. Consulta precios orientativos de demostración y sugerencias de la casa.
           </p>
         </div>
 
@@ -70,25 +63,20 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ items }) => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar plato, ingrediente o alérgeno..."
+              placeholder="Buscar plato o ingrediente..."
               className="w-full pl-10 pr-4 py-2.5 rounded-full text-xs sm:text-sm bg-white border border-[#89957C]/30 focus:border-[#344536] focus:outline-none transition-colors shadow-sm placeholder-[#89957C]"
             />
           </div>
 
-          {/* Contador y Filtro de Verificación */}
+          {/* Contador y distintivo de demo */}
           <div className="flex items-center justify-between w-full md:w-auto gap-4 text-xs text-[#89957C]">
             <span>
-              Mostrando <strong className="text-[#344536]">{filteredItems.length}</strong> platos
+              Mostrando <strong className="text-[#344536]">{filteredItems.length}</strong> platos en carta
             </span>
-            <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-[#344536]">
-              <input
-                type="checkbox"
-                checked={onlyVerified}
-                onChange={(e) => setOnlyVerified(e.target.checked)}
-                className="rounded border-[#89957C] text-[#344536] focus:ring-0 w-3.5 h-3.5"
-              />
-              <span>Sólo precios confirmados</span>
-            </label>
+            <span className="inline-flex items-center gap-1 text-[11px] bg-white border border-[#89957C]/20 px-2.5 py-1 rounded-full text-[#344536]">
+              <Info className="w-3 h-3 text-[#B96F51]" />
+              <span>Actualizable desde /admin</span>
+            </span>
           </div>
         </div>
 
@@ -171,42 +159,26 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ items }) => {
                       </p>
                     </div>
 
-                    {/* Alérgenos y estado */}
+                    {/* Alérgenos y estado discreto de verificación */}
                     <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2 text-[11px]">
-                      {item.allergens && item.allergens.length > 0 ? (
-                        <div className="flex flex-wrap gap-1 max-w-[70%]">
-                          {item.allergens.slice(0, 3).map((a) => (
-                            <span
-                              key={a}
-                              className="px-1.5 py-0.5 rounded bg-[#F4F0E7] text-[#344536] text-[9px] font-medium"
-                            >
-                              {a}
-                            </span>
-                          ))}
-                          {item.allergens.length > 3 && (
-                            <span className="text-[9px] text-[#89957C] self-center">
-                              +{item.allergens.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-[#89957C]">Sin alérgenos listados</span>
-                      )}
+                      <span className="text-[10px] text-[#89957C]">
+                        Información de alérgenos: consultar en sala
+                      </span>
 
-                      {/* Insignia de verificación */}
+                      {/* Insignia discreta */}
                       <div>
                         {isVerified ? (
                           <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
                             <CheckCircle2 className="w-2.5 h-2.5" />
-                            Oficial
+                            Confirmado
                           </span>
                         ) : (
                           <span
-                            className="inline-flex items-center gap-1 text-[9px] font-semibold text-[#B96F51] bg-[#B96F51]/10 px-1.5 py-0.5 rounded"
+                            className="inline-flex items-center gap-1 text-[9px] font-semibold text-[#89957C] bg-[#F4F0E7] px-1.5 py-0.5 rounded"
                             title="Precio pendiente de ratificación en carta oficial"
                           >
                             <Clock className="w-2.5 h-2.5" />
-                            Ref. previa
+                            Ref. provisional
                           </span>
                         )}
                       </div>
@@ -229,7 +201,6 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ items }) => {
               onClick={() => {
                 setSelectedCategory('Todos');
                 setSearchQuery('');
-                setOnlyVerified(false);
               }}
               className="text-xs font-semibold uppercase tracking-wider text-[#344536] underline hover:text-[#B96F51]"
             >
@@ -238,9 +209,9 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ items }) => {
           </div>
         )}
 
-        {/* Aviso de alérgenos normativo */}
+        {/* Nota informativa de alérgenos respetuosa y profesional */}
         <div className="mt-12 text-center text-[11px] text-[#89957C] max-w-2xl mx-auto">
-          En cumplimiento del Reglamento (UE) nº 1169/2011, disponemos de la información sobre sustancias causantes de alergias e intolerancias alimentarias. Si tiene alguna alergia o intolerancia, por favor consulte a nuestro personal de sala antes de realizar su comanda.
+          En cumplimiento del Reglamento (UE) nº 1169/2011, la información detallada sobre alérgenos e ingredientes específicos está a disposición del cliente en el establecimiento y será facilitada por el equipo de sala al tomar la comanda.
         </div>
 
       </div>

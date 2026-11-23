@@ -1,6 +1,6 @@
 import React from 'react';
 import { RestaurantConfig } from '@/types';
-import { MapPin, Phone, Clock, ExternalLink, Navigation } from 'lucide-react';
+import { MapPin, Phone, Clock, ExternalLink, Navigation, Info } from 'lucide-react';
 
 interface ContactProps {
   config: RestaurantConfig;
@@ -37,7 +37,7 @@ export const Contact: React.FC<ContactProps> = ({ config }) => {
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#89957C]">
-                    Dirección
+                    Dirección de Referencia
                   </h3>
                   <p className="font-serif text-lg font-bold text-[#344536]">
                     {config.address}
@@ -63,9 +63,14 @@ export const Contact: React.FC<ContactProps> = ({ config }) => {
 
             {/* Horarios de Apertura */}
             <div className="bg-white p-6 rounded-2xl border border-[#89957C]/25 shadow-sm space-y-4">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#89957C]">
-                <Clock className="w-4 h-4 text-[#344536]" />
-                <span>Horario Habitual</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#89957C]">
+                  <Clock className="w-4 h-4 text-[#344536]" />
+                  <span>Horario Estimado de Demostración</span>
+                </div>
+                <span className="text-[10px] text-[#B96F51] bg-[#B96F51]/10 px-2 py-0.5 rounded font-semibold">
+                  Sujeto a confirmación
+                </span>
               </div>
 
               <div className="space-y-3 divide-y divide-gray-100 text-xs">
@@ -89,7 +94,7 @@ export const Contact: React.FC<ContactProps> = ({ config }) => {
               </div>
             </div>
 
-            {/* Redes y Enlaces Oficiales */}
+            {/* Redes y Enlaces Oficiales Públicos */}
             <div className="grid grid-cols-2 gap-4">
               <a
                 href={config.instagram_url}
@@ -104,7 +109,7 @@ export const Contact: React.FC<ContactProps> = ({ config }) => {
                 </div>
                 <div>
                   <span className="block text-[10px] uppercase font-bold text-[#89957C]">
-                    Instagram Oficial
+                    Instagram
                   </span>
                   <span className="text-xs font-semibold text-[#344536]">
                     @benaventegastrobar

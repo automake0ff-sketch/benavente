@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { RestaurantConfig } from '@/types';
 import { benaventeStore } from '@/lib/store';
-import { Phone, MessageCircle, Calendar, Users, Clock, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Phone, MessageCircle, Calendar, Users, Clock, Send, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
 interface ReservationsProps {
   config: RestaurantConfig;
@@ -20,12 +20,12 @@ export const Reservations: React.FC<ReservationsProps> = ({ config }) => {
   });
 
   const [submitted, setSubmitted] = useState(false);
-  const [whatsappUrl, setWhatsappUrl] = useState<string>('');
+  const [hasWhatsApp] = useState<boolean>(Boolean(config.is_phone_verified && config.whatsapp_number));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Guardar en el store local para gestión del administrador
+    // Guardar en el store local (localStorage) como solicitud simulada
     benaventeStore.addReservation({
       name: formData.name,
       phone: formData.phone,
@@ -35,20 +35,6 @@ export const Reservations: React.FC<ReservationsProps> = ({ config }) => {
       notes: formData.notes,
     });
 
-    // Formatear mensaje pre-construido para WhatsApp
-    const message = `¡Hola Benavente Gastrobar! Quisiera solicitar una reserva con estos datos:%0A%0A` +
-      `👤 *Nombre:* ${encodeURIComponent(formData.name)}%0A` +
-      `📞 *Teléfono:* ${encodeURIComponent(formData.phone)}%0A` +
-      `📅 *Fecha:* ${encodeURIComponent(formData.date)}%0A` +
-      `⏰ *Hora:* ${encodeURIComponent(formData.time)}%0A` +
-      `👥 *Comensales:* ${formData.guests} personas%0A` +
-      (formData.notes ? `📝 *Observaciones:* ${encodeURIComponent(formData.notes)}%0A%0A` : '%0A') +
-      `_Quedo pendiente de su confirmación. ¡Muchas gracias!_`;
-
-    const cleanNumber = config.whatsapp_number.replace(/\D/g, '');
-    const url = `https://wa.me/${cleanNumber}?text=${message}`;
-
-    setWhatsappUrl(url);
     setSubmitted(true);
   };
 
@@ -68,74 +54,98 @@ export const Reservations: React.FC<ReservationsProps> = ({ config }) => {
                 Solicitar Reserva
               </h2>
               <p className="text-sm sm:text-base text-[#252923]/75 leading-relaxed">
-                Asegura tu mesa en Benavente Gastrobar. Para grupos o peticiones especiales, también puedes contactarnos directamente.
+                Esta sección permite a los clientes solicitar mesa con antelación desde su móvil o navegador. En esta demo interactiva, puedes probar el flujo completo.
               </p>
             </div>
 
-            {/* Aviso ético y transparente */}
+            {/* Aviso ético y transparente de la demo comercial */}
             <div className="p-4 rounded-xl bg-[#F4F0E7] border border-[#89957C]/25 text-xs text-[#252923]/80 space-y-1.5">
               <div className="flex items-center gap-1.5 font-bold text-[#344536]">
-                <AlertCircle className="w-4 h-4 text-[#B96F51]" />
-                <span>Importante sobre la disponibilidad</span>
+                <Info className="w-4 h-4 text-[#B96F51]" />
+                <span>Simulación de reserva interactiva</span>
               </div>
               <p>
-                La solicitud enviada mediante este formulario <strong>no constituye una reserva automática confirmada</strong>. Nuestro equipo revisará el libro de reservas y te confirmará la disponibilidad vía WhatsApp o llamada telefónica.
+                Al rellenar este formulario, la solicitud se almacena localmente y se visualiza en tiempo real en el <strong>Panel Administrativo</strong> para que el hostelero pueda gestionar y contactar con el cliente.
               </p>
             </div>
 
             {/* Vías de contacto directo */}
             <div className="space-y-3 pt-2">
               <p className="text-xs font-bold uppercase tracking-wider text-[#89957C]">
-                Contacto Directo
+                Contacto Directo con el Establecimiento
               </p>
 
-              {/* Botón WhatsApp */}
-              <a
-                href={`https://wa.me/${config.whatsapp_number.replace(/\D/g, '')}?text=Hola%20Benavente%20Gastrobar,%20quisiera%20consultar%20disponibilidad%20de%20mesa`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-between p-4 rounded-xl bg-[#344536] text-[#FCFAF5] hover:bg-[#252923] transition-all shadow-sm group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-600/30 flex items-center justify-center text-emerald-300">
+              {/* Botón WhatsApp: Sólo activo si está verificado */}
+              {hasWhatsApp ? (
+                <a
+                  href={`https://wa.me/${config.whatsapp_number.replace(/\D/g, '')}?text=Hola%20Benavente%20Gastrobar,%20quisiera%20consultar%20disponibilidad%20de%20mesa`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-between p-4 rounded-xl bg-[#344536] text-[#FCFAF5] hover:bg-[#252923] transition-all shadow-sm group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-600/30 flex items-center justify-center text-emerald-300">
+                      <MessageCircle className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                      <span className="block text-xs uppercase tracking-wider font-semibold text-[#89957C]">
+                        WhatsApp Directo
+                      </span>
+                      <span className="text-sm font-bold text-white">
+                        {config.whatsapp_display}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-xs text-[#89957C] group-hover:text-white transition-colors">
+                    Abrir chat →
+                  </span>
+                </a>
+              ) : (
+                <div className="w-full p-4 rounded-xl bg-[#F4F0E7]/60 border border-[#89957C]/20 flex items-center gap-3 text-xs text-[#252923]/70">
+                  <div className="w-10 h-10 rounded-full bg-[#89957C]/15 flex items-center justify-center text-[#89957C] shrink-0">
                     <MessageCircle className="w-5 h-5" />
                   </div>
-                  <div className="text-left">
-                    <span className="block text-xs uppercase tracking-wider font-semibold text-[#89957C]">
-                      WhatsApp Directo
-                    </span>
-                    <span className="text-sm font-bold text-white">
-                      {config.whatsapp_display}
-                    </span>
+                  <div>
+                    <span className="block font-bold text-[#344536]">Canal WhatsApp</span>
+                    <span>Pendiente de vincular con el teléfono oficial del restaurante.</span>
                   </div>
                 </div>
-                <span className="text-xs text-[#89957C] group-hover:text-white transition-colors">
-                  Abrir chat →
-                </span>
-              </a>
+              )}
 
-              {/* Botón Llamada */}
-              <a
-                href={`tel:${config.phone}`}
-                className="w-full flex items-center justify-between p-4 rounded-xl bg-white border border-[#89957C]/30 text-[#344536] hover:bg-[#F4F0E7] transition-all shadow-sm group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#89957C]/15 flex items-center justify-center text-[#344536]">
+              {/* Botón Llamada: Sólo activo si está verificado */}
+              {config.is_phone_verified && config.phone ? (
+                <a
+                  href={`tel:${config.phone}`}
+                  className="w-full flex items-center justify-between p-4 rounded-xl bg-white border border-[#89957C]/30 text-[#344536] hover:bg-[#F4F0E7] transition-all shadow-sm group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#89957C]/15 flex items-center justify-center text-[#344536]">
+                      <Phone className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                      <span className="block text-[11px] uppercase tracking-wider font-semibold text-[#89957C]">
+                        Llamada Telefónica
+                      </span>
+                      <span className="text-sm font-bold text-[#344536]">
+                        {config.phone_display}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-xs text-[#89957C] group-hover:text-[#344536] transition-colors">
+                    Llamar →
+                  </span>
+                </a>
+              ) : (
+                <div className="w-full p-4 rounded-xl bg-[#F4F0E7]/60 border border-[#89957C]/20 flex items-center gap-3 text-xs text-[#252923]/70">
+                  <div className="w-10 h-10 rounded-full bg-[#89957C]/15 flex items-center justify-center text-[#89957C] shrink-0">
                     <Phone className="w-5 h-5" />
                   </div>
-                  <div className="text-left">
-                    <span className="block text-[11px] uppercase tracking-wider font-semibold text-[#89957C]">
-                      Llamada Telefónica
-                    </span>
-                    <span className="text-sm font-bold text-[#344536]">
-                      {config.phone_display}
-                    </span>
+                  <div>
+                    <span className="block font-bold text-[#344536]">Línea Telefónica</span>
+                    <span>Número pendiente de confirmación oficial con gerencia.</span>
                   </div>
                 </div>
-                <span className="text-xs text-[#89957C] group-hover:text-[#344536] transition-colors">
-                  Llamar →
-                </span>
-              </a>
+              )}
             </div>
 
           </div>
@@ -149,7 +159,7 @@ export const Reservations: React.FC<ReservationsProps> = ({ config }) => {
                     Formulario de Solicitud de Mesa
                   </h3>
                   <p className="text-xs text-[#252923]/70 mt-1">
-                    Rellena tus datos para generar la petición y contactar con el local.
+                    Prueba el formulario rellenando los datos de la reserva simulada.
                   </p>
                 </div>
 
@@ -250,9 +260,6 @@ export const Reservations: React.FC<ReservationsProps> = ({ config }) => {
                       </button>
                     ))}
                   </div>
-                  <p className="text-[11px] text-[#89957C]">
-                    Para grupos de más de 6 personas recomendamos llamar directamente.
-                  </p>
                 </div>
 
                 {/* Observaciones */}
@@ -275,7 +282,7 @@ export const Reservations: React.FC<ReservationsProps> = ({ config }) => {
                   className="w-full flex items-center justify-center gap-2 bg-[#344536] text-[#FCFAF5] hover:bg-[#252923] py-3.5 rounded-xl text-sm font-semibold tracking-wider uppercase transition-all shadow-md hover:shadow-lg cursor-pointer"
                 >
                   <Send className="w-4 h-4 text-[#89957C]" />
-                  <span>Enviar Solicitud de Reserva</span>
+                  <span>Probar Solicitud de Reserva</span>
                 </button>
               </form>
             ) : (
@@ -286,27 +293,19 @@ export const Reservations: React.FC<ReservationsProps> = ({ config }) => {
 
                 <div className="space-y-2">
                   <h3 className="font-serif text-2xl font-bold text-[#344536]">
-                    ¡Solicitud Registrada con Éxito!
+                    Solicitud Registrada en la Demo
                   </h3>
-                  <p className="text-sm text-[#252923]/75 max-w-md mx-auto">
-                    Hemos guardado los detalles para <strong>{formData.name}</strong> ({formData.guests} personas) para el día <strong>{formData.date}</strong> a las <strong>{formData.time}</strong>.
+                  <p className="text-sm text-[#252923]/85 max-w-md mx-auto font-medium">
+                    «Tu solicitud de reserva se ha preparado correctamente. Esta es una demostración comercial interactiva y todavía no se ha enviado al restaurante».
                   </p>
                 </div>
 
-                {/* Paso siguiente con WhatsApp */}
-                <div className="p-4 rounded-xl bg-[#F4F0E7] border border-[#89957C]/30 max-w-md mx-auto space-y-3">
-                  <p className="text-xs text-[#344536] font-medium">
-                    Para agilizar la respuesta del restaurante, puedes abrir WhatsApp con el mensaje ya redactado:
+                {/* Explicación didáctica de cara al propietario */}
+                <div className="p-4 rounded-xl bg-[#F4F0E7] border border-[#89957C]/30 max-w-md mx-auto space-y-2 text-xs text-[#252923]/80">
+                  <p className="font-bold text-[#344536]">¿Cómo lo vería el restaurante?</p>
+                  <p>
+                    Esta petición para <strong>{formData.name}</strong> ({formData.guests} personas el {formData.date} a las {formData.time}h) ya está disponible en la pestaña <strong>Solicitudes Reserva</strong> de tu panel `/admin` para gestionar su confirmación.
                   </p>
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs tracking-wider uppercase shadow"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Abrir WhatsApp con mi reserva</span>
-                  </a>
                 </div>
 
                 <button
@@ -322,9 +321,9 @@ export const Reservations: React.FC<ReservationsProps> = ({ config }) => {
                       notes: '',
                     });
                   }}
-                  className="text-xs text-[#89957C] hover:text-[#344536] font-semibold underline"
+                  className="text-xs text-[#344536] hover:text-[#B96F51] font-semibold underline"
                 >
-                  Realizar otra solicitud
+                  Probar otra solicitud
                 </button>
               </div>
             )}

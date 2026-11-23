@@ -20,13 +20,13 @@ export const FeaturedDishes: React.FC<FeaturedDishesProps> = ({ items }) => {
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-[#89957C]">
               <Star className="w-4 h-4 text-[#B96F51] fill-[#B96F51]" />
-              <span>Selección Icónica</span>
+              <span>Selección de la Casa</span>
             </div>
             <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-[#344536] leading-tight">
               Platos Protagonistas
             </h2>
             <p className="text-base text-[#252923]/80">
-              Creaciones que resumen el espíritu de Benavente: sabor reconocible, técnica actual y ese giro original que invita a repetir.
+              Creaciones que resumen el espíritu de Benavente: sabor reconocible, técnica actual y ese giro original que invita a compartir.
             </p>
           </div>
 
@@ -42,7 +42,6 @@ export const FeaturedDishes: React.FC<FeaturedDishesProps> = ({ items }) => {
         {/* Rejilla de Platos Protagonistas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {featured.map((dish, idx) => {
-            const isUnconfirmed = dish.price === null || dish.verification_status === 'pending';
             return (
               <div
                 key={dish.id}
@@ -67,8 +66,8 @@ export const FeaturedDishes: React.FC<FeaturedDishesProps> = ({ items }) => {
                       {dish.category}
                     </span>
                     {dish.verification_status === 'pending' && (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-[#F4F0E7] text-[#B96F51] border border-[#B96F51]/30">
-                        Ref. Preliminar
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-[#F4F0E7] text-[#89957C] border border-[#89957C]/30">
+                        Ref. provisional
                       </span>
                     )}
                   </div>
@@ -101,23 +100,6 @@ export const FeaturedDishes: React.FC<FeaturedDishesProps> = ({ items }) => {
                     <p className="text-sm text-[#252923]/75 leading-relaxed">
                       {dish.description}
                     </p>
-
-                    {/* Alérgenos */}
-                    {dish.allergens && dish.allergens.length > 0 && (
-                      <div className="pt-2 flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#89957C]">
-                          Alérgenos:
-                        </span>
-                        {dish.allergens.map((alg) => (
-                          <span
-                            key={alg}
-                            className="text-[10px] px-2 py-0.5 rounded bg-[#F4F0E7] text-[#344536] font-medium"
-                          >
-                            {alg}
-                          </span>
-                        ))}
-                      </div>
-                    )}
                   </div>
 
                   {/* Pie de tarjeta con verificación responsable */}
@@ -133,7 +115,7 @@ export const FeaturedDishes: React.FC<FeaturedDishesProps> = ({ items }) => {
                       href="#reservas"
                       className="text-[#344536] hover:text-[#B96F51] font-semibold text-xs flex items-center gap-1"
                     >
-                      <span>Pedir en mesa</span>
+                      <span>Reservar mesa</span>
                       <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
@@ -148,7 +130,7 @@ export const FeaturedDishes: React.FC<FeaturedDishesProps> = ({ items }) => {
         <div className="mt-8 p-4 rounded-xl bg-[#F4F0E7]/60 border border-[#89957C]/20 flex items-center gap-3 text-xs text-[#252923]/75">
           <AlertCircle className="w-4 h-4 text-[#89957C] shrink-0" />
           <span>
-            <strong>Catálogo de demostración:</strong> Los precios y descripciones se basan en referencias públicas iniciales recopiladas y quedan sujetas a ratificación final por la gerencia de Benavente Gastrobar.
+            <strong>Catálogo de demostración comercial:</strong> Los precios y selecciones se basan en referencias públicas iniciales y podrán ser personalizados y ratificados por la gerencia de Benavente Gastrobar desde el panel de gestión.
           </span>
         </div>
 

@@ -20,10 +20,23 @@ export default function HomePage() {
   const [specialties, setSpecialties] = useState<GastroSpecialty[]>([]);
 
   useEffect(() => {
-    // Cargar del store cliente con soporte SSR seguro
-    setConfig(benaventeStore.getConfig());
-    setMenuItems(benaventeStore.getMenuItems());
-    setSpecialties(benaventeStore.getSpecialties());
+    const refreshData = () => {
+      setConfig(benaventeStore.getConfig());
+      setMenuItems(benaventeStore.getMenuItems());
+      setSpecialties(benaventeStore.getSpecialties());
+    };
+
+    // Carga inicial en cliente
+    refreshData();
+
+    // Escuchar cambios reactivos producidos desde el panel /admin en este mismo navegador
+    window.addEventListener('benavente_store_updated', refreshData);
+    window.addEventListener('storage', refreshData);
+
+    return () => {
+      window.removeEventListener('benavente_store_updated', refreshData);
+      window.removeEventListener('storage', refreshData);
+    };
   }, []);
 
   if (!config) {
@@ -59,7 +72,7 @@ export default function HomePage() {
       
       <Footer config={config} />
 
-      {/* Botón Flotante de WhatsApp para conversión inmediata móvil */}
+      {/* Botón Flotante de WhatsApp para conversión inmediata móvil: Sólo si está verificado */}
       {config.is_phone_verified && config.whatsapp_number && (
         <a
           href={`https://wa.me/${config.whatsapp_number.replace(/\D/g, '')}?text=Hola%20Benavente%20Gastrobar,%20quisiera%20información`}
