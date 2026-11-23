@@ -2,17 +2,26 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Benavente Gastrobar | Demo Comercial de Experiencia Digital",
-  description: "Propuesta de microapp y carta digital interactiva para Benavente Gastrobar (Sevilla). Demostración comercial y prototipo funcional.",
-  keywords: ["Benavente Gastrobar", "Gastrobar Sevilla", "Tapas Sevilla", "Carta Digital", "Demo Comercial"],
+  title: "Benavente Gastrobar — La tradición tiene otro sabor",
+  description: "Gastrobar en Sevilla. Cocina andaluza tradicional con toques creativos, tapas para compartir y una propuesta gastronómica con personalidad. Consulta nuestra carta digital.",
+  keywords: ["Benavente Gastrobar", "Gastrobar Sevilla", "Tapas Sevilla", "Carta Digital", "Cocina Andaluza", "Restaurante Sevilla Este"],
   metadataBase: new URL("https://benavente2.vercel.app"),
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
   openGraph: {
-    title: "Benavente Gastrobar — Demo Comercial de Carta y Experiencia Digital",
-    description: "La tradición tiene otro sabor. Prototipo funcional de carta interactiva, reservas y panel de control.",
+    title: "Benavente Gastrobar — La tradición tiene otro sabor",
+    description: "Cocina con personalidad, platos para compartir y ese punto canalla que hace volver. Carta digital interactiva.",
     url: "https://benavente2.vercel.app/",
-    siteName: "Benavente Gastrobar (Demo)",
+    siteName: "Benavente Gastrobar",
     locale: "es_ES",
     type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
   },
 };
 

@@ -56,7 +56,7 @@ export const Navbar: React.FC<NavbarProps> = ({ config }) => {
               PROTAGONISTAS
             </Link>
             <Link
-              href="#carta"
+              href="/carta"
               className="hover:text-[#B96F51] transition-colors py-1 flex items-center gap-1.5 font-semibold text-[#344536]"
             >
               <UtensilsCrossed className="w-3.5 h-3.5 text-[#B96F51]" />
@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({ config }) => {
               Platos Protagonistas
             </Link>
             <Link
-              href="#carta"
+              href="/carta"
               onClick={() => setIsOpen(false)}
               className="hover:text-[#B96F51] py-1 text-[#344536] font-semibold flex items-center justify-between border-b border-gray-100"
             >

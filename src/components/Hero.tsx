@@ -1,6 +1,8 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowDown, UtensilsCrossed, Calendar, Sparkles } from 'lucide-react';
+import { ArrowDown, UtensilsCrossed, Calendar, QrCode } from 'lucide-react';
 import { RestaurantConfig } from '@/types';
 
 interface HeroProps {
@@ -8,124 +10,113 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ config }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   return (
-    <section className="relative min-h-[92vh] sm:min-h-screen flex items-center justify-center pt-24 pb-16 overflow-hidden">
-      {/* Background Decorativo Suave */}
-      <div className="absolute inset-0 z-0 opacity-15 pointer-events-none">
-        <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-[#89957C] blur-3xl" />
-        <div className="absolute bottom-1/4 -right-20 w-96 h-96 rounded-full bg-[#B96F51] blur-3xl" />
+    <section className="relative min-h-[100svh] flex flex-col overflow-hidden">
+      {/* Fondo fotográfico con overlay editorial */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src={config.hero_image}
+          alt="Benavente Gastrobar — Cocina andaluza creativa en Sevilla"
+          className="w-full h-full object-cover"
+          loading="eager"
+          fetchPriority="high"
+        />
+        {/* Gradiente editorial: más oscuro abajo para legibilidad */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#252923]/70 via-[#252923]/50 to-[#252923]/85" />
+        {/* Overlay de textura verde oliva sutil */}
+        <div className="absolute inset-0 bg-[#344536]/20 mix-blend-multiply" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          
-          {/* Texto de Impacto */}
-          <div className="lg:col-span-7 flex flex-col items-start text-left space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#89957C]/15 border border-[#89957C]/30 text-xs font-semibold tracking-wider text-[#344536] uppercase">
-              <Sparkles className="w-3.5 h-3.5 text-[#B96F51]" />
-              <span>Gastrobar en Sevilla · Cocina Andaluza Creativa</span>
+      {/* Contenido Principal */}
+      <div className="relative z-10 flex flex-col flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+
+        {/* Espacio para la Navbar fija */}
+        <div className="pt-24 sm:pt-28 flex-1 flex flex-col justify-center">
+
+          <div
+            className={`max-w-4xl transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+          >
+            {/* Etiqueta editorial */}
+            <div className="inline-flex items-center gap-2.5 mb-6">
+              <span className="w-8 h-px bg-[#89957C]" />
+              <span className="text-[11px] font-bold tracking-[0.3em] uppercase text-[#89957C]">
+                Gastrobar en Sevilla — Cocina Andaluza Creativa
+              </span>
             </div>
 
-            <div className="space-y-3">
-              <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#344536] leading-[1.08] tracking-tight">
-                {config.tagline || 'La tradición tiene otro sabor'}
-              </h1>
-              <p className="text-lg sm:text-xl text-[#344536]/80 font-normal max-w-xl leading-relaxed">
-                {config.subtagline || 'Cocina con personalidad, platos para compartir y ese punto canalla que hace volver.'}
-              </p>
-            </div>
+            {/* Titular principal */}
+            <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-[#FCFAF5] leading-[1.03] tracking-tight mb-4">
+              {config.tagline || 'La tradición tiene otro sabor'}
+            </h1>
+
+            {/* Subtítulo */}
+            <p className="text-base sm:text-xl text-[#FCFAF5]/75 font-normal max-w-2xl leading-relaxed mb-8">
+              {config.subtagline || 'Cocina con personalidad, platos para compartir y ese punto canalla que hace volver.'}
+            </p>
 
             {/* CTAs */}
-            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-10">
               <Link
-                href="#carta"
-                className="inline-flex items-center justify-center gap-2 bg-[#344536] text-[#FCFAF5] hover:bg-[#252923] px-7 py-3.5 rounded-full text-sm font-semibold tracking-wider uppercase transition-all duration-300 shadow-md hover:shadow-lg"
+                href="/carta"
+                className="inline-flex items-center justify-center gap-2.5 bg-[#FCFAF5] text-[#344536] hover:bg-[#F4F0E7] px-7 py-4 rounded-full text-sm font-bold tracking-wider uppercase transition-all duration-300 shadow-xl hover:shadow-2xl group"
               >
-                <UtensilsCrossed className="w-4 h-4 text-[#89957C]" />
+                <UtensilsCrossed className="w-4 h-4 text-[#B96F51]" />
                 <span>Ver Nuestra Carta</span>
               </Link>
               <Link
                 href="#reservas"
-                className="inline-flex items-center justify-center gap-2 bg-[#FCFAF5] text-[#344536] hover:bg-[#F4F0E7] border border-[#344536]/30 px-7 py-3.5 rounded-full text-sm font-semibold tracking-wider uppercase transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2.5 bg-[#344536]/70 text-[#FCFAF5] hover:bg-[#344536] border border-[#89957C]/50 px-7 py-4 rounded-full text-sm font-bold tracking-wider uppercase transition-all duration-300 backdrop-blur-sm"
               >
-                <Calendar className="w-4 h-4 text-[#B96F51]" />
+                <Calendar className="w-4 h-4 text-[#89957C]" />
                 <span>Reservar Mesa</span>
               </Link>
             </div>
 
-            {/* Micro datos informativos */}
-            <div className="pt-4 flex flex-wrap items-center gap-6 text-xs text-[#89957C] font-medium border-t border-[#89957C]/20 w-full">
-              <div>
-                <span className="block text-[#344536] font-bold">Ubicación</span>
-                <span>Sevilla Este (Av. Ciencias)</span>
+            {/* Micro-datos informativos */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#FCFAF5]/60 font-medium">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#B96F51]" />
+                <span>Sevilla Este · Av. Ciencias</span>
               </div>
-              <div className="w-px h-6 bg-[#89957C]/30" />
-              <div>
-                <span className="block text-[#344536] font-bold">Concepto</span>
-                <span>Tapas de autor & Compartir</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#89957C]" />
+                <span>Tapas de autor · Platos para compartir</span>
               </div>
-              <div className="w-px h-6 bg-[#89957C]/30" />
-              <div>
-                <span className="block text-[#344536] font-bold">Ambiente</span>
-                <span>Cálido, desenfadado y actual</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FCFAF5]/40" />
+                <span>Cocina tradicional reinterpretada</span>
               </div>
             </div>
           </div>
-
-          {/* Imagen Gastronómica Protagonista con Composición Editorial */}
-          <div className="lg:col-span-5 relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none">
-              
-              {/* Marco fotográfico principal */}
-              <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border-4 border-[#FCFAF5] aspect-[4/5] bg-[#F4F0E7]">
-                <img
-                  src={config.hero_image}
-                  alt="Benavente Gastrobar - Experiencia gastronómica"
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
-                  loading="eager"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                <div className="absolute bottom-4 left-4 right-4 text-white text-xs">
-                  <span className="inline-block px-2.5 py-1 rounded bg-[#344536]/80 backdrop-blur-sm uppercase tracking-widest font-semibold text-[10px] mb-1">
-                    Propuesta de la Casa
-                  </span>
-                  <p className="font-serif text-base font-semibold leading-tight drop-shadow">
-                    Sabor andaluz reinterpretado con técnica y frescura
-                  </p>
-                </div>
-              </div>
-
-              {/* Tarjeta flotante decorativa */}
-              <div className="absolute -bottom-6 -left-6 z-20 bg-[#FCFAF5] p-4 rounded-xl shadow-xl border border-[#89957C]/20 max-w-[210px] hidden sm:block">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#B96F51] animate-pulse" />
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#344536]">
-                    El punto canalla
-                  </span>
-                </div>
-                <p className="text-xs text-[#252923]/80 leading-snug">
-                  Platos pensados para compartir en el centro de la mesa.
-                </p>
-              </div>
-
-              {/* Marco de fondo decorativo */}
-              <div className="absolute -top-4 -right-4 w-full h-full rounded-2xl border-2 border-[#89957C]/40 -z-0 pointer-events-none" />
-            </div>
-          </div>
-
         </div>
 
-        {/* Indicador de desplazamiento */}
-        <div className="mt-12 sm:mt-16 flex flex-col items-center justify-center">
+        {/* Barra inferior: acceso QR + indicador de scroll */}
+        <div
+          className={`pb-8 flex items-end justify-between transition-all duration-700 delay-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+        >
+          {/* Acceso rápido QR */}
+          <Link
+            href="/carta"
+            className="flex items-center gap-2 bg-[#FCFAF5]/10 hover:bg-[#FCFAF5]/20 backdrop-blur-sm border border-[#FCFAF5]/20 px-3.5 py-2 rounded-xl text-[#FCFAF5]/70 hover:text-[#FCFAF5] transition-all"
+          >
+            <QrCode className="w-4 h-4 shrink-0" />
+            <div className="text-left">
+              <span className="block text-[9px] uppercase tracking-widest font-semibold text-[#89957C]">Carta digital</span>
+              <span className="block text-[11px] font-bold leading-none">Acceso directo</span>
+            </div>
+          </Link>
+
+          {/* Indicador de desplazamiento */}
           <Link
             href="#presentacion"
-            className="group flex flex-col items-center text-[#89957C] hover:text-[#344536] transition-colors"
+            className="group flex flex-col items-center text-[#FCFAF5]/50 hover:text-[#FCFAF5] transition-colors"
             aria-label="Descubrir Benavente Gastrobar"
           >
-            <span className="text-[11px] uppercase tracking-[0.25em] font-semibold mb-2">
-              Descubrir experiencia
-            </span>
-            <div className="w-8 h-8 rounded-full border border-[#89957C]/40 flex items-center justify-center group-hover:border-[#344536] transition-colors">
+            <span className="text-[9px] uppercase tracking-[0.3em] font-semibold mb-2">Descubrir</span>
+            <div className="w-8 h-8 rounded-full border border-[#FCFAF5]/30 flex items-center justify-center group-hover:border-[#FCFAF5]/70 transition-colors">
               <ArrowDown className="w-3.5 h-3.5 animate-bounce" />
             </div>
           </Link>

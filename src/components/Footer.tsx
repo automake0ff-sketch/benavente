@@ -45,8 +45,13 @@ export const Footer: React.FC<FooterProps> = ({ config }) => {
                 </Link>
               </li>
               <li>
+                <Link href="/carta" className="hover:text-[#B96F51] transition-colors font-semibold">
+                  Carta Digital (acceso directo)
+                </Link>
+              </li>
+              <li>
                 <Link href="#carta" className="hover:text-[#B96F51] transition-colors">
-                  Carta Digital de Tapas
+                  Carta en Inicio
                 </Link>
               </li>
               <li>
